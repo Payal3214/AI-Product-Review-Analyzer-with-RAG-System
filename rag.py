@@ -4,7 +4,7 @@ import shutil
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain.chains import RetrievalQA
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 
 PERSIST_DIR = "chroma_db"
 
@@ -46,18 +46,17 @@ def fast_retriever():
 
 
 # ---------------- QA CHAIN ----------------
-
 def load_rag():
-    llm = ChatOpenAI(temperature=0)
     retriever = fast_retriever()
+    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
-    qa = RetrievalQA.from_chain_type(
+    return RetrievalQA.from_chain_type(
         llm=llm,
         retriever=retriever,
         chain_type="stuff",
         return_source_documents=True,
     )
-    return qa
+
 
         
 
