@@ -1,3 +1,5 @@
+from rag import load_rag
+
 import streamlit as st
 from rag import load_vectordb, fast_retriever
 from transformers import pipeline
