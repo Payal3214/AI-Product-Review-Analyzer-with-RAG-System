@@ -1,18 +1,37 @@
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
 import os
 import shutil
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
 
-PERSIST_DIR = "/tmp/chroma_shoes"
+PERSIST_DIR = "chroma_db"  # your existing persist directory
 
-def load_vectordb():
-    # Force clean rebuild every time (Streamlit safe)
-    if os.path.exists(PERSIST_DIR):
+def load_vectordb(force_recreate=False):
+    """
+    Load or create the Chroma vector store.
+    If the embedding function conflicts with an existing collection,
+    optionally delete and recreate it.
+    
+    Args:
+        force_recreate (bool): If True, deletes the existing DB and starts fresh.
+    """
+    embed = OpenAIEmbeddings()  # your embedding function
+
+    # If you want to force reset or the directory is corrupted
+    if force_recreate and os.path.exists(PERSIST_DIR):
         shutil.rmtree(PERSIST_DIR)
+        print(f"[INFO] Deleted existing Chroma DB at {PERSIST_DIR}")
 
-    embed = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    return Chroma(persist_directory=PERSIST_DIR, embedding_function=embed)
+    try:
+        vectordb = Chroma(persist_directory=PERSIST_DIR, embedding_function=embed)
+        print("[INFO] Loaded existing Chroma vector store")
+    except ValueError as e:
+        # This handles embedding function mismatch
+        print("[WARNING] Embedding function conflict detected. Recreating DB...")
+        if os.path.exists(PERSIST_DIR):
+            shutil.rmtree(PERSIST_DIR)
+        vectordb = Chroma(persist_directory=PERSIST_DIR, embedding_function=embed)
+        print("[INFO] Created new Chroma vector store with current embedding function")
 
-def fast_retriever(db):
-    return db.as_retriever(search_kwargs={"k":4})
+    return vectordb
+
 
