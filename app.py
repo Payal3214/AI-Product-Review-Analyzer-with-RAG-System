@@ -10,8 +10,7 @@ st.title("Shoes Review Analyzer")
 query = st.text_input("Ask something about your product reviews:")
 
 if query:
-    result = qa.invoke({"query": query})
-    st.write(result["result"])
-
+    result = qa.invoke(query)
+    st.write(result.content)
 
 
