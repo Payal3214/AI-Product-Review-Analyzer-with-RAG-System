@@ -5,7 +5,8 @@ from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
-from langchain.chains import RetrievalQA
+from langchain_experimental.chat_models import RetrievalQA
+
 
 
 PERSIST_DIR = "chroma_db"
