@@ -9,7 +9,9 @@ PERSIST_DIR = "chroma_db"
 
 
 def load_vectordb(force_recreate=False):
-    embed = OpenAIEmbeddings()
+    from langchain_openai import OpenAIEmbeddings
+embed = OpenAIEmbeddings(model="text-embedding-3-small")
+
 
     if force_recreate and os.path.exists(PERSIST_DIR):
         shutil.rmtree(PERSIST_DIR)
