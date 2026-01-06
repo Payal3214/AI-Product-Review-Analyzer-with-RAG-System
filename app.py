@@ -1,6 +1,7 @@
 import streamlit as st
 from rag import load_rag
 
+
 st.set_page_config(page_title="AI Review Analyzer", layout="wide")
 st.title("Shoes Review Analyzer")
 
