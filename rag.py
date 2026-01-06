@@ -1,50 +1,43 @@
 import os
 import shutil
-
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain. chains import RetrievalQA
+from langchain_openai import OpenAIEmbeddings
+from langchain.chains import RetrievalQA
+
 
 PERSIST_DIR = "chroma_db"
 
 
 def load_vectordb(force_recreate=False):
-    from langchain_openai import OpenAIEmbeddings
-embed = OpenAIEmbeddings(model="text-embedding-3-small")
-
-
-if force_recreate and os.path.exists(PERSIST_DIR):
+    if force_recreate and os.path.exists(PERSIST_DIR):
         shutil.rmtree(PERSIST_DIR)
 
-    try:
-        vectordb = Chroma(
-            persist_directory=PERSIST_DIR,
-            embedding_function=embed
-        )
-    except ValueError:
-if os.path.exists(PERSIST_DIR):
-            shutil.rmtree(PERSIST_DIR)
-        vectordb = Chroma(
-            persist_directory=PERSIST_DIR,
-            embedding_function=embed
-        )
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 
+    if os.path.exists(PERSIST_DIR):
+        return Chroma(persist_directory=PERSIST_DIR, embedding_function=embeddings)
+
+    loader = PyPDFLoader("data/reviews.pdf")
+    documents = loader.load()
+
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+    chunks = splitter.split_documents(documents)
+
+    vectordb = Chroma.from_documents(
+        chunks,
+        embedding=embeddings,
+        persist_directory=PERSIST_DIR
+    )
+    vectordb.persist()
     return vectordb
 
 
-def fast_retriever():
-    return load_vectordb().as_retriever(search_kwargs={"k": 4})
-
-
 def load_rag():
-    retriever = fast_retriever()
-    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
-
+    retriever = load_vectordb().as_retriever(search_kwargs={"k": 4})
     return RetrievalQA.from_chain_type(
-        llm=llm,
+        llm=None,
         retriever=retriever,
-        chain_type="stuff",
-        return_source_documents=True,
+        return_source_documents=True
     )
-
-        
