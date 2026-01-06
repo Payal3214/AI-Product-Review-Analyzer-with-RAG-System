@@ -1,7 +1,8 @@
 import os
 import shutil
 from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_openai import ChatOpenAI
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain.chains import RetrievalQA
@@ -36,8 +37,10 @@ def load_vectordb(force_recreate=False):
 
 def load_rag():
     retriever = load_vectordb().as_retriever(search_kwargs={"k": 4})
+    llm = ChatOpenAI(model="gpt-4.1-mini", temperature=0)
+
     return RetrievalQA.from_chain_type(
-        llm=None,
+        llm=llm,
         retriever=retriever,
         return_source_documents=True
     )
