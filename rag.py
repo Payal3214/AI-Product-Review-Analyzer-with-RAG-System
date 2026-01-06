@@ -13,7 +13,7 @@ def load_vectordb(force_recreate=False):
 embed = OpenAIEmbeddings(model="text-embedding-3-small")
 
 
-    if force_recreate and os.path.exists(PERSIST_DIR):
+if force_recreate and os.path.exists(PERSIST_DIR):
         shutil.rmtree(PERSIST_DIR)
 
     try:
@@ -22,7 +22,7 @@ embed = OpenAIEmbeddings(model="text-embedding-3-small")
             embedding_function=embed
         )
     except ValueError:
-        if os.path.exists(PERSIST_DIR):
+if os.path.exists(PERSIST_DIR):
             shutil.rmtree(PERSIST_DIR)
         vectordb = Chroma(
             persist_directory=PERSIST_DIR,
